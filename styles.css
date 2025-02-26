@@ -1,0 +1,84 @@
+/* Tutorial: Styles
+ * This CSS file contains all the styling for the application interface.
+ */
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  padding: 0;
+  overflow: hidden;
+}
+
+#map {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+#video-canvas {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 320px;
+  height: 240px;
+  border: 2px solid #fff;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+  z-index: 1000; /* Increased z-index */
+}
+
+#toggle-container {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  padding: 10px;
+  background: white;
+  border-radius: 4px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+  z-index: 1000; /* Increased z-index */
+}
+
+#instructions {
+  margin-bottom: 10px;
+  font-size: 14px;
+  color: #333;
+}
+
+slider-container {
+  margin: 10px 0;
+}
+
+#reset-btn {
+  margin-top: 10px;
+  padding: 5px 10px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+#reset-btn:hover {
+  background: #0056b3;
+}
+
+#tooltip {
+  display: none;
+  position: absolute;
+  background: white;
+  padding: 10px;
+  border-radius: 4px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+  z-index: 1001; /* Highest z-index to always show on top */
+}
+
+#manual-controls {
+  display: none;
+  margin-top: 10px;
+}
+
+#manual-controls button {
+  margin: 2px;
+}

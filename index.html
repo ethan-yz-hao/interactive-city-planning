@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>QR Code Controlled QR on deck.gl Map with Hexagon Layer</title>
+    <!-- External Dependencies -->
+    <script src="https://unpkg.com/deck.gl@latest/dist.min.js"></script>
+    <script src="https://api.tiles.mapbox.com/mapbox-gl-js/v1.13.0/mapbox-gl.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/maplibre-gl@2.0.0/dist/maplibre-gl.js"></script>
+    <link
+      href="https://api.tiles.mapbox.com/mapbox-gl-js/v1.13.0/mapbox-gl.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <!-- Application Scripts -->
+    <script src="js/config.js" defer></script>
+    <script src="js/qrDetection.js" defer></script>
+    <script src="js/mapLayers.js" defer></script>
+    <script src="js/controls.js" defer></script>
+    <script src="js/app.js" defer></script>
+  </head>
+  <body>
+    <div id="map"></div>
+    <canvas id="video-canvas"></canvas>
+    <div id="toggle-container">
+      <label for="toggle">Show Hexagon Layer</label>
+      <input type="checkbox" id="toggle" />
+      <div id="slider-container">
+        <label for="scale-slider"
+          >Movement Radius: <span id="scale-value">0.00001</span></label
+        >
+        <input
+          type="range"
+          id="scale-slider"
+          min="0.000001"
+          max="0.0001"
+          step="0.000001"
+          value="0.00001"
+        />
+      </div>
+      <div id="slider-container">
+        <label for="weight-slider"
+          >QR Impact: <span id="weight-value">1</span></label
+        >
+        <input
+          type="range"
+          id="weight-slider"
+          min="1"
+          max="100"
+          step="1"
+          value="1"
+        />
+      </div>
+      <div id="manual-toggle-container">
+        <label for="manual-toggle">Manual Control</label>
+        <input type="checkbox" id="manual-toggle" />
+      </div>
+      <div id="manual-controls">
+        <button id="move-up">Up</button>
+        <button id="move-down">Down</button>
+        <button id="move-left">Left</button>
+        <button id="move-right">Right</button>
+      </div>
+    </div>
+    <div id="tooltip"></div>
+  </body>
+</html>

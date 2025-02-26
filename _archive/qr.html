@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>QR Code Tracker</title>
+    <style>
+      body {
+        margin: 0;
+      }
+      canvas {
+        display: block;
+      }
+      #info {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        color: white;
+        font-family: Arial, sans-serif;
+        font-size: 16px;
+        background-color: rgba(0, 0, 0, 0.5);
+        padding: 10px;
+        border-radius: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="info">Connecting to WebSocket...</div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+      const wsUrl = "ws://localhost:8765";
+      const infoElement = document.getElementById("info");
+      let socket;
+
+      // Three.js setup
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(
+        75,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        1000
+      );
+      const renderer = new THREE.WebGLRenderer();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      document.body.appendChild(renderer.domElement);
+
+      // Create a cube
+      const geometry = new THREE.BoxGeometry();
+      const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+      const cube = new THREE.Mesh(geometry, material);
+      scene.add(cube);
+
+      camera.position.z = 5;
+
+      function connect() {
+        socket = new WebSocket(wsUrl);
+
+        socket.onopen = function () {
+          infoElement.textContent = "Connected to WebSocket";
+        };
+
+        socket.onmessage = function (event) {
+          const data = JSON.parse(event.data);
+          updateCube(data);
+        };
+
+        socket.onclose = function (event) {
+          infoElement.textContent = "Disconnected from WebSocket";
+          setTimeout(connect, 5000); // Try to reconnect every 5 seconds
+        };
+
+        socket.onerror = function (error) {
+          console.error("WebSocket Error:", error);
+          infoElement.textContent = "WebSocket Error";
+        };
+      }
+
+      function updateCube(qrCodes) {
+        if (qrCodes.length > 0) {
+          const qr = qrCodes[0]; // Use the first QR code detected
+          const x = (qr.location[0][0] / window.innerWidth) * 2 - 1;
+          const y = -(qr.location[0][1] / window.innerHeight) * 2 + 1;
+
+          // Update position
+          cube.position.x = x * 3;
+          cube.position.y = y * 3;
+
+          // Update rotation
+          cube.rotation.z = -qr.rotation; // Negative because Three.js uses a different coordinate system
+
+          // Update scale
+          const baseScale = 0.5; // Adjust this value to change the base size of the cube
+          const scale = baseScale * (qr.scale / 100); // Assuming qr.scale is in pixels, adjust as needed
+          cube.scale.set(scale, scale, scale);
+
+          infoElement.textContent = `QR Code: ${qr.info} at (${x.toFixed(
+            2
+          )}, ${y.toFixed(2)}), rotation: ${qr.rotation.toFixed(
+            2
+          )}, scale: ${qr.scale.toFixed(2)}`;
+        }
+      }
+
+      function animate() {
+        requestAnimationFrame(animate);
+        renderer.render(scene, camera);
+      }
+
+      // Start the connection and animation
+      connect();
+      animate();
+
+      // Handle window resizing
+      window.addEventListener("resize", onWindowResize, false);
+
+      function onWindowResize() {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      }
+    </script>
+  </body>
+</html>

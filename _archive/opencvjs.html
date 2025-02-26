@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>QR Code Controlled Box on deck.gl Map</title>
+    <script src="https://unpkg.com/deck.gl@latest/dist.min.js"></script>
+    <script src="https://api.tiles.mapbox.com/mapbox-gl-js/v1.13.0/mapbox-gl.js"></script>
+    <link href="https://api.tiles.mapbox.com/mapbox-gl-js/v1.13.0/mapbox-gl.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/maplibre-gl@2.0.0/dist/maplibre-gl.js"></script>
+    <style>
+      body { margin: 0; padding: 0; }
+      #map { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+      #video-canvas { position: absolute; top: 10px; right: 10px; width: 320px; height: 240px; z-index: 1000; }
+    </style>
+  </head>
+  <body>
+    <div id="map"></div>
+    <canvas id="video-canvas"></canvas>
+    <script type="text/javascript">
+      const { DeckGL, ScatterplotLayer } = deck;
+      const { MapboxOverlay } = deck;
+
+      let videoCanvas, videoCtx, cvImg;
+      let opencvjs;
+      let deckgl, boxLayer;
+
+      const INITIAL_VIEW_STATE = {
+        longitude: -74.006,
+        latitude: 40.7128,
+        zoom: 12,
+        pitch: 0,
+        bearing: 0,
+      };
+
+      const initialBoxPosition = [-74.006, 40.7128]; // Initial position in NYC
+      let boxPosition = [...initialBoxPosition];
+      let boxRotation = 0;
+
+      async function loadOpenCVJS() {
+        return new Promise((resolve, reject) => {
+          opencvjs = document.createElement("script");
+          opencvjs.setAttribute("src", "https://docs.opencv.org/4.9.0/opencv.js");
+          opencvjs.onload = () => {
+            cv["onRuntimeInitialized"] = () => {
+              resolve();
+            };
+          };
+          opencvjs.onerror = () => {
+            reject(new Error("Failed to load OpenCV.js"));
+          };
+          document.body.appendChild(opencvjs);
+        });
+      }
+
+      async function initializeVideoAndCanvas() {
+        try {
+          await loadOpenCVJS();
+          videoCanvas = document.getElementById("video-canvas");
+          videoCtx = videoCanvas.getContext("2d");
+
+          const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+          const video = document.createElement("video");
+          video.srcObject = stream;
+          video.play();
+          setInterval(async () => await captureFrame(video), 1000 / 30);
+        } catch (err) {
+          console.error("An error occurred:", err);
+        }
+      }
+
+      async function captureFrame(video) {
+        videoCtx.drawImage(video, 0, 0, videoCanvas.width, videoCanvas.height);
+        cvImg = cv.imread(videoCanvas);
+
+        const qcd = new cv.QRCodeDetector();
+        const decodedInfo = new cv.StringVector();
+        const points = new cv.Mat();
+        const straightQrCode = new cv.MatVector();
+
+        const success = qcd.detectAndDecodeMulti(cvImg, decodedInfo, points, straightQrCode);
+
+        if (success) {
+          for (let i = 0; i < decodedInfo.size(); i++) {
+            const s = decodedInfo.get(i);
+            const p = points.row(i).data32F;
+
+            const center = calculateCenter(p);
+            const rotation = calculateRotation(p);
+
+            // Update box position with smaller increments
+            const scaleFactor = 0.0001; // Adjust this value to control the movement speed
+            boxPosition[0] = initialBoxPosition[0] + (center.x - videoCanvas.width / 2) * scaleFactor;
+            boxPosition[1] = initialBoxPosition[1] + (center.y - videoCanvas.height / 2) * scaleFactor;
+            boxRotation = rotation;
+
+            console.log(`QR Code ${i + 1}:`);
+            console.log(`  Content: ${s}`);
+            console.log(`  Location: (${boxPosition[0].toFixed(6)}, ${boxPosition[1].toFixed(6)})`);
+            console.log(`  Rotation: ${boxRotation.toFixed(2)} degrees`);
+
+            // Draw QR code recognition on the video
+            const pointMatVector = new cv.MatVector();
+            pointMatVector.push_back(cv.matFromArray(4, 1, cv.CV_32SC2, p));
+            cv.polylines(cvImg, pointMatVector, true, new cv.Scalar(0, 255, 0, 255), 2, cv.LINE_AA);
+            cv.putText(cvImg, s, new cv.Point(10, 30 * (i + 1)), cv.FONT_HERSHEY_SIMPLEX, 0.8, new cv.Scalar(0, 255, 0, 255), 2);
+            pointMatVector.delete();
+
+            // Update the deck.gl layer
+            updateBoxLayer();
+          }
+        }
+
+        // Draw the processed frame on the video canvas
+        cv.imshow("video-canvas", cvImg);
+        qcd.delete();
+        decodedInfo.delete();
+        points.delete();
+        straightQrCode.delete();
+        cvImg.delete();
+      }
+
+      function calculateCenter(points) {
+        const x = (points[0] + points[2] + points[4] + points[6]) / 4;
+        const y = (points[1] + points[3] + points[5] + points[7]) / 4;
+        return { x, y };
+      }
+
+      function calculateRotation(points) {
+        const dx = points[2] - points[0];
+        const dy = points[3] - points[1];
+        return Math.atan2(dy, dx) * (180 / Math.PI);
+      }
+
+      function updateBoxLayer() {
+        if (window.deckOverlay) {
+          window.deckOverlay.setProps({
+            layers: [
+              new ScatterplotLayer({
+                id: "box-layer",
+                data: [{ position: boxPosition, angle: boxRotation }],
+                getPosition: (d) => d.position,
+                getRadius: 50, // Reduced radius for smaller dot
+                getFillColor: [255, 0, 0],
+                getLineColor: [0, 0, 0],
+                lineWidthMinPixels: 2,
+                radiusUnits: "meters",
+                getAngle: (d) => d.angle,
+              }),
+            ],
+          });
+        }
+      }
+
+      function initializeDeckGL() {
+        const map = new maplibregl.Map({
+          container: "map",
+          center: [INITIAL_VIEW_STATE.longitude, INITIAL_VIEW_STATE.latitude],
+          zoom: INITIAL_VIEW_STATE.zoom,
+          pitch: INITIAL_VIEW_STATE.pitch,
+          bearing: INITIAL_VIEW_STATE.bearing,
+          style: "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
+          pitch: 30,
+        });
+
+        boxLayer = new ScatterplotLayer({
+          id: "box-layer",
+          data: [{ position: boxPosition, angle: boxRotation }],
+          getPosition: (d) => d.position,
+          getRadius: 50, // Reduced radius for smaller dot
+          getFillColor: [255, 0, 0],
+          getLineColor: [0, 0, 0],
+          lineWidthMinPixels: 2,
+          radiusUnits: "meters",
+          getAngle: (d) => d.angle,
+        });
+
+        const deckOverlay = new MapboxOverlay({
+          layers: [boxLayer],
+        });
+
+        map.addControl(deckOverlay);
+
+        // Store the deckOverlay for later use
+        window.deckOverlay = deckOverlay;
+      }
+
+      initializeVideoAndCanvas();
+      initializeDeckGL();
+    </script>
+  </body>
+</html>
