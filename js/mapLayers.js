@@ -18,8 +18,8 @@ async function loadTreesData() {
     return data.features;
 }
 // now load the lic_bid data
-async function loadLicBidData() {
-    const response = await fetch("lic_bid.json");
+async function loadWvBidData() {
+    const response = await fetch("wv_bid.json");
     const data = await response.json();
     return data.features;
 }
@@ -27,7 +27,7 @@ async function loadLicBidData() {
 async function updateLayers() {
     if (window.deckOverlay) {
         const treesData = await loadTreesData();
-        const licBidData = await loadLicBidData();
+        const wvBidData = await loadWvBidData();
         const layers = [];
 
         if (showHexagonLayer) {
@@ -63,7 +63,7 @@ async function updateLayers() {
             );
         } else {
             layers.push(createScatterplotLayer(treesData));
-            layers.push(createLicBidLayer(licBidData));
+            layers.push(createWvBidLayer(wvBidData));
         }
 
         layers.push(createQRPositionLayer());
@@ -71,12 +71,12 @@ async function updateLayers() {
     }
 }
 
-// Function to create a geojson layer for the lic_bid data
+// Function to create a geojson layer for the wv_bid data
 
-function createLicBidLayer(licBidData) {
+function createWvBidLayer(wvBidData) {
     return new GeoJsonLayer({
         id: "geojson-layer",
-        data: licBidData,
+        data: wvBidData,
         pickable: true,
         stroked: true,
         filled: true,
