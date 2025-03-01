@@ -12,6 +12,9 @@ const {
     GeoJsonLayer,
 } = deck;
 
+// Add this variable at the top of the file with other global variables
+let sidewalkOpacity = 0.8;
+
 async function loadTreesData() {
     const response = await fetch("trees.json");
     const data = await response.json();
@@ -111,7 +114,7 @@ function createSidewalksLayer(sidewalksData) {
         lineWidthScale: 20,
         lineWidthMinPixels: 2,
         getLineColor: [50, 50, 50],
-        getFillColor: [70, 70, 70, 200],
+        getFillColor: [70, 70, 70, Math.floor(sidewalkOpacity * 255)],
         getRadius: 100,
         getLineWidth: 1,
         getElevation: 5,

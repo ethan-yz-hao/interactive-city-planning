@@ -4,10 +4,13 @@
  */
 
 async function initializeApplication() {
-  await initializeVideoAndCanvas();
-  await initializeDeckGL();
-  initializeControls();
+    initializeControls();
+    await initializeVideoAndCanvas();
+    await initializeDeckGL();
 }
 
 // Start the application when the page loads
-document.addEventListener("DOMContentLoaded", initializeApplication);
+document.addEventListener("DOMContentLoaded", () => {
+    console.log("DOM loaded, initializing controls...");
+    initializeApplication();
+});
