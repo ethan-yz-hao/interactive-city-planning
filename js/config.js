@@ -4,16 +4,16 @@
  */
 
 const INITIAL_VIEW_STATE = {
-  longitude: -73.9413184,
-  latitude: 40.7508189,
-  zoom: 16,
-  pitch: 30,
-  bearing: 0,
+    longitude: -74.0028294,
+    latitude: 40.7336088,
+    zoom: 16,
+    pitch: 30,
+    bearing: 0,
 };
 
 const initialQRPosition = [
-  INITIAL_VIEW_STATE.longitude,
-  INITIAL_VIEW_STATE.latitude,
+    INITIAL_VIEW_STATE.longitude,
+    INITIAL_VIEW_STATE.latitude,
 ];
 
 // Global state variables

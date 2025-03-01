@@ -17,6 +17,13 @@ async function loadTreesData() {
     const data = await response.json();
     return data.features;
 }
+
+async function loadSidewalksData() {
+    const response = await fetch("sidewalks.json");
+    const data = await response.json();
+    return data.features;
+}
+
 // now load the lic_bid data
 async function loadWvBidData() {
     const response = await fetch("wv_bid.json");
@@ -27,6 +34,7 @@ async function loadWvBidData() {
 async function updateLayers() {
     if (window.deckOverlay) {
         const treesData = await loadTreesData();
+        const sidewalksData = await loadSidewalksData();
         const wvBidData = await loadWvBidData();
         const layers = [];
 
@@ -63,6 +71,7 @@ async function updateLayers() {
             );
         } else {
             layers.push(createScatterplotLayer(treesData));
+            layers.push(createSidewalksLayer(sidewalksData));
             layers.push(createWvBidLayer(wvBidData));
         }
 
@@ -83,11 +92,29 @@ function createWvBidLayer(wvBidData) {
         extruded: true,
         lineWidthScale: 20,
         lineWidthMinPixels: 2,
-        getLineColor: [160, 160, 180],
-        getFillColor: [140, 170, 180, 100],
+        getLineColor: [160, 160, 180, 150],
+        getFillColor: [140, 170, 180, 50],
         getRadius: 100,
         getLineWidth: 1,
         getElevation: 30,
+    });
+}
+
+function createSidewalksLayer(sidewalksData) {
+    return new GeoJsonLayer({
+        id: "sidewalks-layer",
+        data: sidewalksData,
+        pickable: true,
+        stroked: true,
+        filled: true,
+        extruded: true,
+        lineWidthScale: 20,
+        lineWidthMinPixels: 2,
+        getLineColor: [50, 50, 50],
+        getFillColor: [70, 70, 70, 200],
+        getRadius: 100,
+        getLineWidth: 1,
+        getElevation: 5,
     });
 }
 
