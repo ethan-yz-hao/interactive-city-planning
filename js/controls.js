@@ -4,20 +4,6 @@
  */
 
 function initializeControls() {
-    // Add this at the beginning of your function
-    const sidewalkSlider = document.getElementById("sidewalk-opacity-slider");
-
-    if (sidewalkSlider) {
-        sidewalkSlider.addEventListener("input", (event) => {
-            sidewalkOpacity = parseFloat(event.target.value);
-            document.getElementById("sidewalk-opacity-value").textContent =
-                sidewalkOpacity.toFixed(1);
-            updateLayers();
-        });
-    } else {
-        console.error("Sidewalk opacity slider element not found!");
-    }
-
     // Layer toggle
     document.getElementById("toggle").addEventListener("change", (event) => {
         showHexagonLayer = event.target.checked;
@@ -72,6 +58,17 @@ function initializeControls() {
         QRPosition[0] += 0.0001;
         updateLayers();
     });
+
+    // Sidewalk width slider
+    document
+        .getElementById("sidewalk-width-slider")
+        .addEventListener("input", (event) => {
+            sidewalkWidth = parseFloat(event.target.value);
+            console.log("Sidewalk width changed to:", sidewalkWidth);
+            document.getElementById("sidewalk-width-value").textContent =
+                sidewalkWidth.toFixed(1);
+            updateLayers();
+        });
 }
 
 function updateTooltip({ object, x, y }) {

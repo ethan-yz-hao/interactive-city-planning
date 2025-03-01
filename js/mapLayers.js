@@ -13,7 +13,7 @@ const {
 } = deck;
 
 // Add this variable at the top of the file with other global variables
-let sidewalkOpacity = 0.8;
+let sidewalkWidth = 1.0; // Default width multiplier
 
 async function loadTreesData() {
     const response = await fetch("trees.json");
@@ -32,6 +32,51 @@ async function loadWvBidData() {
     const response = await fetch("wv_bid.json");
     const data = await response.json();
     return data.features;
+}
+
+// Add this function to buffer the sidewalk geometries
+function bufferSidewalks(sidewalksData, bufferFactor) {
+    console.log("Buffering sidewalks with factor:", bufferFactor);
+    // Create a deep copy of the data to avoid modifying the original
+    const bufferedData = JSON.parse(JSON.stringify(sidewalksData));
+
+    // Apply buffer to each feature
+    bufferedData.forEach((feature) => {
+        // For Polygon geometries
+        if (feature.geometry.type === "Polygon") {
+            // Scale the polygon from its centroid
+            const coordinates = feature.geometry.coordinates[0]; // Outer ring
+            if (coordinates.length < 3) return; // Skip if not enough points
+
+            // Calculate centroid
+            let centroidX = 0;
+            let centroidY = 0;
+            for (let i = 0; i < coordinates.length; i++) {
+                centroidX += coordinates[i][0];
+                centroidY += coordinates[i][1];
+            }
+            centroidX /= coordinates.length;
+            centroidY /= coordinates.length;
+
+            // Scale each point relative to the centroid
+            for (let i = 0; i < coordinates.length; i++) {
+                const point = coordinates[i];
+                const dx = point[0] - centroidX;
+                const dy = point[1] - centroidY;
+
+                // Apply scaling factor (1.0 is original size, >1.0 expands, <1.0 shrinks)
+                const scaleFactor = 1.0 + (bufferFactor - 1.0) * 0.1; // Adjust sensitivity
+
+                // Update coordinates
+                coordinates[i] = [
+                    centroidX + dx * scaleFactor,
+                    centroidY + dy * scaleFactor,
+                ];
+            }
+        }
+    });
+
+    return bufferedData;
 }
 
 async function updateLayers() {
@@ -104,9 +149,12 @@ function createWvBidLayer(wvBidData) {
 }
 
 function createSidewalksLayer(sidewalksData) {
+    // Apply buffer to create wider sidewalks
+    const bufferedSidewalks = bufferSidewalks(sidewalksData, sidewalkWidth);
+
     return new GeoJsonLayer({
         id: "sidewalks-layer",
-        data: sidewalksData,
+        data: bufferedSidewalks,
         pickable: true,
         stroked: true,
         filled: true,
@@ -114,7 +162,7 @@ function createSidewalksLayer(sidewalksData) {
         lineWidthScale: 20,
         lineWidthMinPixels: 2,
         getLineColor: [50, 50, 50],
-        getFillColor: [70, 70, 70, Math.floor(sidewalkOpacity * 255)],
+        getFillColor: [70, 70, 70, 200],
         getRadius: 100,
         getLineWidth: 1,
         getElevation: 5,
