@@ -27,6 +27,12 @@ async function loadSidewalksData() {
     return data.features;
 }
 
+async function loadKpfuiDevData() {
+    const response = await fetch("kpfui_dev.json");
+    const data = await response.json();
+    return data.features;
+}
+
 // now load the lic_bid data
 async function loadWvBidData() {
     const response = await fetch("wv_bid.json");
@@ -84,6 +90,7 @@ async function updateLayers() {
         const treesData = await loadTreesData();
         const sidewalksData = await loadSidewalksData();
         const wvBidData = await loadWvBidData();
+        const kpfuiDevData = await loadKpfuiDevData();
         const layers = [];
 
         if (showHexagonLayer) {
@@ -121,6 +128,7 @@ async function updateLayers() {
             layers.push(createScatterplotLayer(treesData));
             layers.push(createSidewalksLayer(sidewalksData));
             layers.push(createWvBidLayer(wvBidData));
+            layers.push(createKpfuiDevLayer(kpfuiDevData));
         }
 
         layers.push(createQRPositionLayer());
@@ -169,6 +177,23 @@ function createSidewalksLayer(sidewalksData) {
     });
 }
 
+function createKpfuiDevLayer(kpfuiDevData) {
+    return new GeoJsonLayer({
+        id: "kpfui-dev-layer",
+        data: kpfuiDevData,
+        pickable: true,
+        stroked: true,
+        filled: true,
+        extruded: true,
+        lineWidthScale: 5,
+        lineWidthMinPixels: 2,
+        getLineColor: [160, 160, 180, 150],
+        getFillColor: [140, 170, 180, 50],
+        getRadius: 100,
+        getLineWidth: 1,
+        getElevation: 5,
+    });
+}
 function createScatterplotLayer(treesData) {
     return new ScatterplotLayer({
         id: "scatterplot-layer",
