@@ -29,7 +29,7 @@ async function loadSidewalksData() {
 }
 
 async function loadKpfuiDevData() {
-    const response = await fetch("kpfui_dev.json");
+    const response = await fetch("kpfui_dev_polygons.json");
     const data = await response.json();
     return data.features;
 }
@@ -210,12 +210,12 @@ function createKpfuiDevLayer(kpfuiDevData) {
         extruded: true,
         lineWidthScale: 5,
         lineWidthMinPixels: 2,
-        getLineColor: (d) => {
+        getLineColor: null,
+        getFillColor: (d) => {
             // Get the area per person for the selected time
             const areaPerPerson = d.properties[`area_p_${selectedTime}`];
             return getColorForAreaPerPerson(areaPerPerson);
         },
-        getFillColor: [70, 70, 70, 200],
         getRadius: 100,
         getLineWidth: 1,
         getElevation: 5,
