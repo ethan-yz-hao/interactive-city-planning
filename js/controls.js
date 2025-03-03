@@ -109,19 +109,31 @@ function updateSidewalkTooltip({ object, x, y }) {
         tooltip.style.left = `${x}px`;
         tooltip.style.top = `${y}px`;
         tooltip.innerHTML = `
-            <strong>Sidewalk Info:</strong><br>
-            Sidewalk Area: ${props.area?.toFixed(1) || "N/A"} sqft<br>
-            Area per Person: ${
-                props[`area_p_${time}`]?.toFixed(1) || "N/A"
-            } sqft/person<br>
-            Pedestrian Traffic: ${props[`p_total_${time}`] || "0"} /hr<br>
-            Pedestrian Queue: ${props[`p_queue_${time}`] || "0"} /hr<br>
-            Restaurant/Bar: ${props[`rest_${time}`] || "0"} /hr<br>
-            Supermarket: ${props[`supe_${time}`] || "0"} /hr<br>
-            Convenience/Pharmacy: ${props[`phar_${time}`] || "0"} /hr<br>
-            Bank: ${props[`bank_${time}`] || "0"} /hr<br>
-            Office: ${props[`offi_${time}`] || "0"} /hr<br>
-            Subway: ${props[`subw_${time}`] || "0"} /hr
+            <strong>Sidewalk Area: ${
+                props.est_area_ft?.toFixed(1) || "N/A"
+            } sqft</strong><br>
+            <strong>Sidewalk Width: ${
+                props.est_width_ft?.toFixed(1) || "N/A"
+            } ft</strong><br>
+            <strong>Area per Person: ${
+                props[`est_area_p_${time}`]?.toFixed(1) || "N/A"
+            } sqft/person</strong><br>
+            <strong>Pedestrian Traffic: ${
+                props[`p_total_${time}`] || "0"
+            } /hr</strong><br>
+            <ul style="margin: 5px 0; padding-left: 20px;">
+                <li>Pedestrian Queue: ${
+                    props[`p_queue_${time}`] || "0"
+                } /hr</li>
+                <li>Restaurant/Bar: ${props[`rest_${time}`] || "0"} /hr</li>
+                <li>Supermarket: ${props[`supe_${time}`] || "0"} /hr</li>
+                <li>Convenience/Pharmacy: ${
+                    props[`phar_${time}`] || "0"
+                } /hr</li>
+                <li>Bank: ${props[`bank_${time}`] || "0"} /hr</li>
+                <li>Office: ${props[`offi_${time}`] || "0"} /hr</li>
+                <li>Subway: ${props[`subw_${time}`] || "0"} /hr</li>
+            </ul>
         `;
     } else {
         tooltip.style.display = "none";

@@ -213,12 +213,12 @@ function createKpfuiDevLayer(kpfuiDevData) {
         getLineColor: null,
         getFillColor: (d) => {
             // Get the area per person for the selected time
-            const areaPerPerson = d.properties[`area_p_${selectedTime}`];
+            const areaPerPerson = d.properties[`est_area_p_${selectedTime}`];
             return getColorForAreaPerPerson(areaPerPerson);
         },
         getRadius: 100,
         getLineWidth: 1,
-        getElevation: 5,
+        getElevation: 0,
         onHover: updateSidewalkTooltip, // Use our new tooltip function
     });
 }
