@@ -69,6 +69,15 @@ function initializeControls() {
                 sidewalkWidth.toFixed(1);
             updateLayers();
         });
+
+    // Time selector
+    document
+        .getElementById("time-selector")
+        .addEventListener("change", (event) => {
+            selectedTime = event.target.value;
+            console.log("Time changed to:", selectedTime);
+            updateLayers();
+        });
 }
 
 function updateTooltip({ object, x, y }) {
@@ -84,6 +93,35 @@ function updateTooltip({ object, x, y }) {
             Condition: ${object.properties.TPCondition}<br>
             Planted Date: ${object.properties.PlantedDate || "N/A"}<br>
             Risk Rating: ${object.properties.RiskRating || "N/A"}
+        `;
+    } else {
+        tooltip.style.display = "none";
+    }
+}
+
+function updateSidewalkTooltip({ object, x, y }) {
+    const tooltip = document.getElementById("tooltip");
+    if (object && object.properties) {
+        const props = object.properties;
+        const time = selectedTime;
+
+        tooltip.style.display = "block";
+        tooltip.style.left = `${x}px`;
+        tooltip.style.top = `${y}px`;
+        tooltip.innerHTML = `
+            <strong>Sidewalk Info:</strong><br>
+            Sidewalk Area: ${props.area?.toFixed(1) || "N/A"} sqft<br>
+            Area per Person: ${
+                props[`area_p_${time}`]?.toFixed(1) || "N/A"
+            } sqft/person<br>
+            Pedestrian Traffic: ${props[`p_total_${time}`] || "0"} /hr<br>
+            Pedestrian Queue: ${props[`p_queue_${time}`] || "0"} /hr<br>
+            Restaurant/Bar: ${props[`rest_${time}`] || "0"} /hr<br>
+            Supermarket: ${props[`supe_${time}`] || "0"} /hr<br>
+            Convenience/Pharmacy: ${props[`phar_${time}`] || "0"} /hr<br>
+            Bank: ${props[`bank_${time}`] || "0"} /hr<br>
+            Office: ${props[`offi_${time}`] || "0"} /hr<br>
+            Subway: ${props[`subw_${time}`] || "0"} /hr
         `;
     } else {
         tooltip.style.display = "none";

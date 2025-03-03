@@ -14,6 +14,7 @@ const {
 
 // Add this variable at the top of the file with other global variables
 let sidewalkWidth = 1.0; // Default width multiplier
+let selectedTime = "9"; // Default to 9 AM
 
 async function loadTreesData() {
     const response = await fetch("trees.json");
@@ -88,7 +89,7 @@ function bufferSidewalks(sidewalksData, bufferFactor) {
 async function updateLayers() {
     if (window.deckOverlay) {
         const treesData = await loadTreesData();
-        const sidewalksData = await loadSidewalksData();
+        // const sidewalksData = await loadSidewalksData();
         const wvBidData = await loadWvBidData();
         const kpfuiDevData = await loadKpfuiDevData();
         const layers = [];
@@ -126,7 +127,7 @@ async function updateLayers() {
             );
         } else {
             layers.push(createScatterplotLayer(treesData));
-            layers.push(createSidewalksLayer(sidewalksData));
+            // layers.push(createSidewalksLayer(sidewalksData));
             layers.push(createWvBidLayer(wvBidData));
             layers.push(createKpfuiDevLayer(kpfuiDevData));
         }
@@ -177,6 +178,28 @@ function createSidewalksLayer(sidewalksData) {
     });
 }
 
+// Add this function to calculate color based on area per person
+function getColorForAreaPerPerson(areaPerPerson) {
+    // Color scale from yellow (low area/person) to purple (high area/person)
+    // Default to middle value if data is missing
+    if (areaPerPerson === undefined || areaPerPerson === null) {
+        return [128, 0, 128, 200]; // Default purple
+    }
+
+    // Clamp value between 0 and 200
+    const value = Math.max(0, Math.min(200, areaPerPerson));
+
+    // Interpolate between yellow [255, 255, 0] and purple [128, 0, 128]
+    const ratio = value / 200;
+
+    return [
+        Math.round(255 - 127 * ratio), // R: 255 -> 128
+        Math.round(255 * (1 - ratio)), // G: 255 -> 0
+        Math.round(128 * ratio), // B: 0 -> 128
+        200, // Alpha
+    ];
+}
+
 function createKpfuiDevLayer(kpfuiDevData) {
     return new GeoJsonLayer({
         id: "kpfui-dev-layer",
@@ -187,13 +210,19 @@ function createKpfuiDevLayer(kpfuiDevData) {
         extruded: true,
         lineWidthScale: 5,
         lineWidthMinPixels: 2,
-        getLineColor: [160, 160, 180, 150],
-        getFillColor: [140, 170, 180, 50],
+        getLineColor: (d) => {
+            // Get the area per person for the selected time
+            const areaPerPerson = d.properties[`area_p_${selectedTime}`];
+            return getColorForAreaPerPerson(areaPerPerson);
+        },
+        getFillColor: [70, 70, 70, 200],
         getRadius: 100,
         getLineWidth: 1,
         getElevation: 5,
+        onHover: updateSidewalkTooltip, // Use our new tooltip function
     });
 }
+
 function createScatterplotLayer(treesData) {
     return new ScatterplotLayer({
         id: "scatterplot-layer",
