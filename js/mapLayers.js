@@ -266,4 +266,7 @@ async function initializeDeckGL() {
 
     window.deckOverlay = new MapboxOverlay({ layers: [] });
     map.addControl(window.deckOverlay);
+
+    // Add this line to load layers after map initialization
+    await updateLayers();
 }

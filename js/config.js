@@ -17,7 +17,7 @@ const initialQRPosition = [
 ];
 
 // Global state variables
-let showHexagonLayer = true;
+let showHexagonLayer = false;
 let movementRadius = 0.00001;
 let manualControl = false;
 let QRPosition = [...initialQRPosition];
