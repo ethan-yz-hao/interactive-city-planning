@@ -15,6 +15,8 @@ const {
 // Add this variable at the top of the file with other global variables
 let sidewalkWidth = 1.0; // Default width multiplier
 let selectedTime = "9"; // Default to 9 AM
+let selectedPolygonId = null; // Track the currently selected polygon
+let kpfuiDevDataCache = null; // Cache for the data
 
 // async function loadTreesData() {
 //     const response = await fetch("trees.json");
@@ -29,9 +31,12 @@ let selectedTime = "9"; // Default to 9 AM
 // }
 
 async function loadKpfuiDevData() {
-    const response = await fetch("kpfui_dev_polygons.json");
-    const data = await response.json();
-    return data.features;
+    if (!kpfuiDevDataCache) {
+        const response = await fetch("kpfui_dev_polygons.json");
+        const data = await response.json();
+        kpfuiDevDataCache = data.features;
+    }
+    return JSON.parse(JSON.stringify(kpfuiDevDataCache)); // Return a deep copy
 }
 
 // now load the lic_bid data
@@ -91,7 +96,16 @@ async function updateLayers() {
         // const treesData = await loadTreesData();
         // const sidewalksData = await loadSidewalksData();
         const wvBidData = await loadWvBidData();
-        const kpfuiDevData = await loadKpfuiDevData();
+        let kpfuiDevData = await loadKpfuiDevData();
+
+        // Update the selected state in the data
+        kpfuiDevData = kpfuiDevData.map((feature) => {
+            // Add a selected property to each feature
+            feature.properties.selected =
+                feature.properties.polygon_id === selectedPolygonId;
+            return feature;
+        });
+
         const layers = [];
 
         if (showHexagonLayer) {
@@ -209,19 +223,30 @@ function createKpfuiDevLayer(kpfuiDevData) {
         pickable: true,
         stroked: true,
         filled: true,
-        extruded: true,
-        lineWidthScale: 5,
-        lineWidthMinPixels: 2,
-        getLineColor: null,
+        getLineColor: (d) => {
+            // Return red if this polygon is selected, otherwise default color
+            return d.properties.selected ? [255, 0, 0, 255] : null;
+        },
         getFillColor: (d) => {
             // Get the area per person for the selected time
             const areaPerPerson = d.properties[`area_p_${selectedTime}`];
             return getColorForAreaPerPerson(areaPerPerson);
         },
         getRadius: 100,
-        getLineWidth: 1,
-        getElevation: 0,
-        onHover: updateSidewalkTooltip, // Use our new tooltip function
+        getLineWidth: 0.5,
+        onHover: updateSidewalkTooltip,
+        onClick: (info) => {
+            if (info.object) {
+                // Toggle selection - if clicking the same polygon, deselect it
+                if (selectedPolygonId === info.object.properties.polygon_id) {
+                    selectedPolygonId = null;
+                } else {
+                    selectedPolygonId = info.object.properties.polygon_id;
+                }
+                // Refresh the layer to show the selection change
+                updateLayers();
+            }
+        },
     });
 }
 
