@@ -157,7 +157,7 @@ function createWvBidLayer(wvBidData) {
     });
 }
 
-function createSidewalksLayer(sidewalksData) {
+/* function createSidewalksLayer(sidewalksData) {
     // Apply buffer to create wider sidewalks
     const bufferedSidewalks = bufferSidewalks(sidewalksData, sidewalkWidth);
 
@@ -176,7 +176,7 @@ function createSidewalksLayer(sidewalksData) {
         getLineWidth: 1,
         getElevation: 5,
     });
-}
+} */
 
 // Add this function to calculate color based on area per person
 function getColorForAreaPerPerson(areaPerPerson) {
