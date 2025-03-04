@@ -76,6 +76,25 @@ function initializeControls() {
             updateLayers();
         });
 
+    // Reset width button
+    document
+        .getElementById("reset-width-button")
+        .addEventListener("click", () => {
+            if (selectedPolygonId !== null) {
+                // Reset the slider to 1.0 (original width)
+                document.getElementById("sidewalk-width-slider").value = 1.0;
+                sidewalkWidth = 1.0;
+                document.getElementById("sidewalk-width-value").textContent =
+                    "1.0";
+
+                // Reset the selected polygon's width to original
+                updateSelectedPolygonWidth(1.0);
+
+                // Update the visualization
+                updateLayers();
+            }
+        });
+
     // Time selector
     document
         .getElementById("time-selector")
