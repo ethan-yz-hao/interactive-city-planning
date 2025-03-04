@@ -241,7 +241,7 @@ function createKpfuiDevLayer(kpfuiDevData) {
         },
         getFillColor: (d) => {
             // Get the area per person for the selected time
-            const areaPerPerson = d.properties[`area_p_${selectedTime}`];
+            const areaPerPerson = d.properties[`est_area_p_${selectedTime}`];
             return getColorForAreaPerPerson(areaPerPerson);
         },
         getRadius: 100,
@@ -310,7 +310,170 @@ async function initializeDeckGL() {
     await updateLayers();
 }
 
-// Add this function to update the selected polygon's width and related properties
+// Add this function to update the selected polygon's geometry based on width multiplier
+function updateSelectedPolygonGeometry(widthMultiplier) {
+    if (!kpfuiDevDataCache || selectedPolygonId === null) return;
+
+    // Find the selected polygon in the cache
+    const selectedPolygon = kpfuiDevDataCache.find(
+        (feature) => feature.properties.polygon_id === selectedPolygonId
+    );
+
+    if (selectedPolygon && selectedPolygon.geometry.type === "Polygon") {
+        // Store original geometry if not already stored
+        if (!selectedPolygon.originalGeometry) {
+            selectedPolygon.originalGeometry = JSON.parse(
+                JSON.stringify(selectedPolygon.geometry)
+            );
+        }
+
+        // If multiplier is 1.0, restore original geometry
+        if (widthMultiplier === 1.0 && selectedPolygon.originalGeometry) {
+            selectedPolygon.geometry = JSON.parse(
+                JSON.stringify(selectedPolygon.originalGeometry)
+            );
+            return;
+        }
+
+        // Get the coordinates of the outer ring
+        const coordinates = selectedPolygon.geometry.coordinates[0];
+        if (coordinates.length < 3) return; // Need at least 3 points for a polygon
+
+        // Calculate centroid
+        let centroidX = 0;
+        let centroidY = 0;
+        for (let i = 0; i < coordinates.length; i++) {
+            centroidX += coordinates[i][0];
+            centroidY += coordinates[i][1];
+        }
+        centroidX /= coordinates.length;
+        centroidY /= coordinates.length;
+
+        // Find the shortest distance from centroid to any edge
+        let shortestDirection = { x: 0, y: 0 };
+        let shortestDistance = Infinity;
+
+        for (let i = 0; i < coordinates.length; i++) {
+            const p1 = coordinates[i];
+            const p2 = coordinates[(i + 1) % coordinates.length];
+
+            // Calculate the distance from centroid to this edge
+            const distance = distanceToLine(
+                centroidX,
+                centroidY,
+                p1[0],
+                p1[1],
+                p2[0],
+                p2[1]
+            );
+
+            if (distance < shortestDistance) {
+                shortestDistance = distance;
+
+                // Calculate the direction vector perpendicular to this edge
+                const dx = p2[0] - p1[0];
+                const dy = p2[1] - p1[1];
+
+                // Perpendicular vector
+                shortestDirection = {
+                    x: -dy,
+                    y: dx,
+                };
+
+                // Normalize the direction vector
+                const length = Math.sqrt(
+                    shortestDirection.x * shortestDirection.x +
+                        shortestDirection.y * shortestDirection.y
+                );
+                shortestDirection.x /= length;
+                shortestDirection.y /= length;
+
+                // Make sure the direction points outward from the polygon
+                const midX = (p1[0] + p2[0]) / 2;
+                const midY = (p1[1] + p2[1]) / 2;
+                const toCentroidX = centroidX - midX;
+                const toCentroidY = centroidY - midY;
+
+                // If the dot product is negative, flip the direction
+                if (
+                    toCentroidX * shortestDirection.x +
+                        toCentroidY * shortestDirection.y <
+                    0
+                ) {
+                    shortestDirection.x = -shortestDirection.x;
+                    shortestDirection.y = -shortestDirection.y;
+                }
+            }
+        }
+
+        // Now scale the polygon along the shortest direction
+        const scaleFactor = widthMultiplier - 1.0;
+
+        // Use the original geometry as the base
+        if (selectedPolygon.originalGeometry) {
+            const originalCoords =
+                selectedPolygon.originalGeometry.coordinates[0];
+
+            for (let i = 0; i < coordinates.length; i++) {
+                // Get the original point
+                const origPoint = originalCoords[i];
+
+                // Vector from centroid to point
+                const vx = origPoint[0] - centroidX;
+                const vy = origPoint[1] - centroidY;
+
+                // Project this vector onto the shortest direction
+                const projection =
+                    vx * shortestDirection.x + vy * shortestDirection.y;
+
+                // Scale the projection
+                const scaledProjection = projection * scaleFactor;
+
+                // Add the scaled projection to the original point
+                coordinates[i][0] =
+                    origPoint[0] + scaledProjection * shortestDirection.x;
+                coordinates[i][1] =
+                    origPoint[1] + scaledProjection * shortestDirection.y;
+            }
+        }
+    }
+}
+
+// Helper function to calculate distance from a point to a line segment
+function distanceToLine(px, py, x1, y1, x2, y2) {
+    const A = px - x1;
+    const B = py - y1;
+    const C = x2 - x1;
+    const D = y2 - y1;
+
+    const dot = A * C + B * D;
+    const len_sq = C * C + D * D;
+    let param = -1;
+
+    if (len_sq !== 0) {
+        param = dot / len_sq;
+    }
+
+    let xx, yy;
+
+    if (param < 0) {
+        xx = x1;
+        yy = y1;
+    } else if (param > 1) {
+        xx = x2;
+        yy = y2;
+    } else {
+        xx = x1 + param * C;
+        yy = y1 + param * D;
+    }
+
+    const dx = px - xx;
+    const dy = py - yy;
+
+    return Math.sqrt(dx * dx + dy * dy);
+}
+
+// Update the updateSelectedPolygonWidth function to also update geometry
 function updateSelectedPolygonWidth(widthMultiplier) {
     if (!kpfuiDevDataCache || selectedPolygonId === null) return;
 
@@ -350,6 +513,7 @@ function updateSelectedPolygonWidth(widthMultiplier) {
             });
         }
 
-        // console.log("Updated polygon properties:", props);
+        // Update the geometry of the polygon
+        updateSelectedPolygonGeometry(widthMultiplier);
     }
 }
