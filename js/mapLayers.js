@@ -211,14 +211,17 @@ function getColorForAreaPerPerson(areaPerPerson) {
         return [128, 0, 128, 255]; // Default purple
     }
 
-    // Clamp value between 0 and 200
+    // Clamp value between 0 and 300
     const value = Math.max(0, Math.min(300, areaPerPerson));
 
     // Normalize to 0-1 range
     const normalizedValue = value / 300;
 
-    // Use d3's viridis color scale (or choose another like d3.interpolateInferno, d3.interpolatePlasma, etc.)
-    const color = d3.color(d3.interpolateInferno(normalizedValue));
+    // Reverse the normalized value to make low values yellow and high values purple
+    const reversedValue = 1 - normalizedValue;
+
+    // Use d3's inferno color scale in reverse
+    const color = d3.color(d3.interpolateInferno(reversedValue));
 
     return [
         color.r,
