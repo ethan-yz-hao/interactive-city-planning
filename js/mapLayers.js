@@ -180,23 +180,25 @@ function createSidewalksLayer(sidewalksData) {
 
 // Add this function to calculate color based on area per person
 function getColorForAreaPerPerson(areaPerPerson) {
-    // Color scale from yellow (low area/person) to purple (high area/person)
     // Default to middle value if data is missing
     if (areaPerPerson === undefined || areaPerPerson === null) {
         return [128, 0, 128, 255]; // Default purple
     }
 
     // Clamp value between 0 and 200
-    const value = Math.max(0, Math.min(200, areaPerPerson));
+    const value = Math.max(0, Math.min(300, areaPerPerson));
 
-    // Interpolate between yellow [255, 255, 0] and purple [128, 0, 128]
-    const ratio = value / 200;
+    // Normalize to 0-1 range
+    const normalizedValue = value / 300;
+
+    // Use d3's viridis color scale (or choose another like d3.interpolateInferno, d3.interpolatePlasma, etc.)
+    const color = d3.color(d3.interpolateInferno(normalizedValue));
 
     return [
-        Math.round(255 - 127 * ratio), // R: 255 -> 128
-        Math.round(255 * (1 - ratio)), // G: 255 -> 0
-        Math.round(128 * ratio), // B: 0 -> 128
-        255, // Alpha
+        color.r,
+        color.g,
+        color.b,
+        255, // Full opacity
     ];
 }
 
