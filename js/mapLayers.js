@@ -32,7 +32,7 @@ let kpfuiDevDataCache = null; // Cache for the data
 
 async function loadKpfuiDevData() {
     if (!kpfuiDevDataCache) {
-        const response = await fetch("kpfui_dev_polygons.json");
+        const response = await fetch("kpfui_dev_polygons_deduplicated.json");
         const data = await response.json();
 
         // Add original_width_ft property to each feature if needed
