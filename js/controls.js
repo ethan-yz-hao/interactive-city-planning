@@ -9,15 +9,24 @@ function initializeControls() {
         showHexagonLayer = event.target.checked;
         updateLayers();
     });
+    // Scale slider
+    document
+        .getElementById("scale-slider")
+        .addEventListener("input", (event) => {
+            hexagonRadius = parseInt(event.target.value);
+            document.getElementById("scale-value").textContent = hexagonRadius;
+            updateLayers();
+        });
 
-    // // Scale slider
-    // document
-    //     .getElementById("scale-slider")
-    //     .addEventListener("input", (event) => {
-    //         movementRadius = parseFloat(event.target.value);
-    //         document.getElementById("scale-value").textContent =
-    //             movementRadius.toFixed(6);
-    //     });
+    // Elevation scale slider
+    document
+        .getElementById("elevation-slider")
+        .addEventListener("input", (event) => {
+            hexagonElevationScale = parseInt(event.target.value);
+            document.getElementById("elevation-value").textContent =
+                hexagonElevationScale;
+            updateLayers();
+        });
 
     // // Weight slider
     // document

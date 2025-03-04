@@ -23,3 +23,7 @@ let manualControl = false;
 let QRPosition = [...initialQRPosition];
 let QRRotation = 0;
 let qrWeight = 1; // Add new variable for QR weight
+
+// Add these variables for the hexagon layer
+let hexagonRadius = 50;
+let hexagonElevationScale = 10;

@@ -17,6 +17,8 @@ let sidewalkWidth = 1.0; // Default width multiplier
 let selectedTime = "9"; // Default to 9 AM
 let selectedPolygonId = null; // Track the currently selected polygon
 let kpfuiDevDataCache = null; // Cache for the data
+let hexagonRadius = 50; // Default hexagon radius
+let hexagonElevationScale = 10; // Default elevation scale
 
 // async function loadTreesData() {
 //     const response = await fetch("trees.json");
@@ -121,36 +123,77 @@ async function updateLayers() {
         const layers = [];
 
         if (showHexagonLayer) {
-            // layers.push(
-            //     new HexagonLayer({
-            //         id: "hexagon-layer",
-            //         data: [
-            //             ...treesData.map((tree) => ({
-            //                 ...tree,
-            //                 weight: 1,
-            //             })),
-            //             {
-            //                 geometry: { coordinates: QRPosition },
-            //                 weight: qrWeight,
-            //             },
-            //         ],
-            //         getPosition: (d) => d.geometry.coordinates,
-            //         getElevationWeight: (d) => d.weight,
-            //         radius: 50,
-            //         elevationScale: 1,
-            //         extruded: true,
-            //         pickable: true,
-            //         opacity: 0.85,
-            //         colorRange: [
-            //             [1, 152, 189],
-            //             [73, 227, 206],
-            //             [216, 254, 181],
-            //             [254, 237, 177],
-            //             [254, 173, 84],
-            //             [209, 55, 78],
-            //         ],
-            //     })
-            // );
+            // Create data points for the hexagon layer from the sidewalk polygons
+            const hexagonData = [];
+
+            kpfuiDevData.forEach((feature) => {
+                if (feature.geometry.type === "Polygon") {
+                    // Get the centroid of the polygon
+                    const coordinates = feature.geometry.coordinates[0];
+                    let centroidX = 0;
+                    let centroidY = 0;
+
+                    for (let i = 0; i < coordinates.length; i++) {
+                        centroidX += coordinates[i][0];
+                        centroidY += coordinates[i][1];
+                    }
+
+                    centroidX /= coordinates.length;
+                    centroidY /= coordinates.length;
+
+                    // Get the crowdedness value (inverse of area per person)
+                    const areaPerPerson =
+                        feature.properties[`est_area_p_${selectedTime}`];
+
+                    // Higher weight for more crowded areas (lower area per person)
+                    // Use a reasonable default if data is missing
+                    let weight = 1;
+                    if (
+                        areaPerPerson !== undefined &&
+                        areaPerPerson !== null &&
+                        areaPerPerson > 0
+                    ) {
+                        // Inverse relationship - less area per person means more crowded
+                        weight = 100 / areaPerPerson;
+                    }
+
+                    hexagonData.push({
+                        position: [centroidX, centroidY],
+                        weight: weight,
+                    });
+                }
+            });
+
+            layers.push(
+                new HexagonLayer({
+                    id: "hexagon-layer",
+                    data: hexagonData,
+                    getPosition: (d) => d.position,
+                    getElevationWeight: (d) => d.weight,
+                    getColorWeight: (d) => d.weight,
+                    radius: hexagonRadius,
+                    elevationScale: hexagonElevationScale,
+                    extruded: true,
+                    pickable: true,
+                    opacity: 0.8,
+                    colorRange: [
+                        [1, 152, 189], // Light blue (less crowded)
+                        [73, 227, 206], // Teal
+                        [216, 254, 181], // Light green
+                        [254, 237, 177], // Light yellow
+                        [254, 173, 84], // Orange
+                        [209, 55, 78], // Red (more crowded)
+                    ],
+                    coverage: 0.9,
+                    upperPercentile: 90,
+                    material: {
+                        ambient: 0.64,
+                        diffuse: 0.6,
+                        shininess: 32,
+                        specularColor: [51, 51, 51],
+                    },
+                })
+            );
         } else {
             // layers.push(createScatterplotLayer(treesData));
             // layers.push(createSidewalksLayer(sidewalksData));
