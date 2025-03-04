@@ -176,14 +176,6 @@ async function updateLayers() {
                     extruded: true,
                     pickable: true,
                     opacity: 0.8,
-                    colorRange: [
-                        [1, 152, 189], // Light blue (less crowded)
-                        [73, 227, 206], // Teal
-                        [216, 254, 181], // Light green
-                        [254, 237, 177], // Light yellow
-                        [254, 173, 84], // Orange
-                        [209, 55, 78], // Red (more crowded)
-                    ],
                     coverage: 0.9,
                     upperPercentile: 90,
                     material: {
