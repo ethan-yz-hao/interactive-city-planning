@@ -34,6 +34,18 @@ async function loadKpfuiDevData() {
     if (!kpfuiDevDataCache) {
         const response = await fetch("kpfui_dev_polygons.json");
         const data = await response.json();
+
+        // Add original_width_ft property to each feature if needed
+        data.features.forEach((feature) => {
+            if (
+                feature.properties.est_width_ft &&
+                !feature.properties.original_width_ft
+            ) {
+                feature.properties.original_width_ft =
+                    feature.properties.est_width_ft;
+            }
+        });
+
         kpfuiDevDataCache = data.features;
     }
     return JSON.parse(JSON.stringify(kpfuiDevDataCache)); // Return a deep copy
@@ -296,4 +308,48 @@ async function initializeDeckGL() {
 
     // Add this line to load layers after map initialization
     await updateLayers();
+}
+
+// Add this function to update the selected polygon's width and related properties
+function updateSelectedPolygonWidth(newWidth) {
+    if (!kpfuiDevDataCache || selectedPolygonId === null) return;
+
+    // Find the selected polygon in the cache
+    const selectedPolygon = kpfuiDevDataCache.find(
+        (feature) => feature.properties.polygon_id === selectedPolygonId
+    );
+
+    if (selectedPolygon) {
+        const props = selectedPolygon.properties;
+        const originalWidth = props.original_width_ft || props.est_width_ft;
+
+        // Store the original width if not already stored
+        if (!props.original_width_ft) {
+            props.original_width_ft = props.est_width_ft;
+        }
+
+        // Update the width
+        props.est_width_ft = newWidth;
+
+        // Calculate the new area based on length and new width
+        const length = props.est_length_ft;
+        if (length) {
+            const newArea = newWidth * length;
+            props.est_area_ft = newArea;
+
+            // Update area per person for each time period
+            const times = ["9", "12", "19"];
+            times.forEach((time) => {
+                const pedestrianCount = props[`p_total_${time}`] || 0;
+                // Avoid division by zero
+                if (pedestrianCount > 0) {
+                    props[`est_area_p_${time}`] = newArea / pedestrianCount;
+                } else {
+                    props[`est_area_p_${time}`] = newArea; // If no pedestrians, area per person is just the area
+                }
+            });
+        }
+
+        // console.log("Updated polygon properties:", props);
+    }
 }

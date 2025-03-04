@@ -64,9 +64,15 @@ function initializeControls() {
         .getElementById("sidewalk-width-slider")
         .addEventListener("input", (event) => {
             sidewalkWidth = parseFloat(event.target.value);
-            console.log("Sidewalk width changed to:", sidewalkWidth);
+            // console.log("Sidewalk width changed to:", sidewalkWidth);
             document.getElementById("sidewalk-width-value").textContent =
                 sidewalkWidth.toFixed(1);
+
+            // Update the selected polygon's width and related properties
+            if (selectedPolygonId !== null) {
+                updateSelectedPolygonWidth(sidewalkWidth);
+            }
+
             updateLayers();
         });
 
