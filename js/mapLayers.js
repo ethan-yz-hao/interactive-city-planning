@@ -311,7 +311,7 @@ async function initializeDeckGL() {
 }
 
 // Add this function to update the selected polygon's width and related properties
-function updateSelectedPolygonWidth(newWidth) {
+function updateSelectedPolygonWidth(widthMultiplier) {
     if (!kpfuiDevDataCache || selectedPolygonId === null) return;
 
     // Find the selected polygon in the cache
@@ -321,20 +321,20 @@ function updateSelectedPolygonWidth(newWidth) {
 
     if (selectedPolygon) {
         const props = selectedPolygon.properties;
-        const originalWidth = props.original_width_ft || props.est_width_ft;
 
         // Store the original width if not already stored
         if (!props.original_width_ft) {
             props.original_width_ft = props.est_width_ft;
         }
 
-        // Update the width
-        props.est_width_ft = newWidth;
+        // Update the width based on the multiplier and original width
+        const originalWidth = props.original_width_ft;
+        props.est_width_ft = originalWidth * widthMultiplier;
 
         // Calculate the new area based on length and new width
         const length = props.est_length_ft;
         if (length) {
-            const newArea = newWidth * length;
+            const newArea = props.est_width_ft * length;
             props.est_area_ft = newArea;
 
             // Update area per person for each time period

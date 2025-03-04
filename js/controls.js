@@ -64,7 +64,7 @@ function initializeControls() {
         .getElementById("sidewalk-width-slider")
         .addEventListener("input", (event) => {
             sidewalkWidth = parseFloat(event.target.value);
-            // console.log("Sidewalk width changed to:", sidewalkWidth);
+            // console.log("Sidewalk width multiplier changed to:", sidewalkWidth);
             document.getElementById("sidewalk-width-value").textContent =
                 sidewalkWidth.toFixed(1);
 
