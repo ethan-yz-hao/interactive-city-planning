@@ -8,6 +8,9 @@
     <script src="https://unpkg.com/deck.gl@latest/dist.min.js"></script>
     <script src="https://api.tiles.mapbox.com/mapbox-gl-js/v1.13.0/mapbox-gl.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/maplibre-gl@2.0.0/dist/maplibre-gl.js"></script>
+    <script src="https://d3js.org/d3-color.v2.min.js"></script>
+    <script src="https://d3js.org/d3-interpolate.v2.min.js"></script>
+    <script src="https://d3js.org/d3-scale-chromatic.v2.min.js"></script>
     <link
       href="https://api.tiles.mapbox.com/mapbox-gl-js/v1.13.0/mapbox-gl.css"
       rel="stylesheet"
@@ -22,11 +25,11 @@
   </head>
   <body>
     <div id="map"></div>
-    <canvas id="video-canvas"></canvas>
+    <!-- <canvas id="video-canvas"></canvas> -->
     <div id="toggle-container">
       <label for="toggle">Show Hexagon Layer</label>
       <input type="checkbox" id="toggle" />
-      <div id="slider-container">
+      <!-- <div id="slider-container">
         <label for="scale-slider"
           >Movement Radius: <span id="scale-value">0.00001</span></label
         >
@@ -51,8 +54,8 @@
           step="1"
           value="1"
         />
-      </div>
-      <div id="manual-toggle-container">
+      </div> -->
+      <!-- <div id="manual-toggle-container">
         <label for="manual-toggle">Manual Control</label>
         <input type="checkbox" id="manual-toggle" />
       </div>
@@ -61,7 +64,7 @@
         <button id="move-down">Down</button>
         <button id="move-left">Left</button>
         <button id="move-right">Right</button>
-      </div>
+      </div> -->
       <div id="slider-container">
         <label for="sidewalk-width-slider">Sidewalk Width: <span id="sidewalk-width-value">1.0</span></label>
         <input

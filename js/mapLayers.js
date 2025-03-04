@@ -126,13 +126,13 @@ async function updateLayers() {
                 })
             );
         } else {
-            layers.push(createScatterplotLayer(treesData));
+            // layers.push(createScatterplotLayer(treesData));
             // layers.push(createSidewalksLayer(sidewalksData));
             layers.push(createWvBidLayer(wvBidData));
             layers.push(createKpfuiDevLayer(kpfuiDevData));
         }
 
-        layers.push(createQRPositionLayer());
+        // layers.push(createQRPositionLayer());
         window.deckOverlay.setProps({ layers });
     }
 }
@@ -183,7 +183,7 @@ function getColorForAreaPerPerson(areaPerPerson) {
     // Color scale from yellow (low area/person) to purple (high area/person)
     // Default to middle value if data is missing
     if (areaPerPerson === undefined || areaPerPerson === null) {
-        return [128, 0, 128, 200]; // Default purple
+        return [128, 0, 128, 255]; // Default purple
     }
 
     // Clamp value between 0 and 200
@@ -196,7 +196,7 @@ function getColorForAreaPerPerson(areaPerPerson) {
         Math.round(255 - 127 * ratio), // R: 255 -> 128
         Math.round(255 * (1 - ratio)), // G: 255 -> 0
         Math.round(128 * ratio), // B: 0 -> 128
-        200, // Alpha
+        255, // Alpha
     ];
 }
 
@@ -213,7 +213,7 @@ function createKpfuiDevLayer(kpfuiDevData) {
         getLineColor: null,
         getFillColor: (d) => {
             // Get the area per person for the selected time
-            const areaPerPerson = d.properties[`est_area_p_${selectedTime}`];
+            const areaPerPerson = d.properties[`area_p_${selectedTime}`];
             return getColorForAreaPerPerson(areaPerPerson);
         },
         getRadius: 100,
@@ -223,20 +223,20 @@ function createKpfuiDevLayer(kpfuiDevData) {
     });
 }
 
-function createScatterplotLayer(treesData) {
-    return new ScatterplotLayer({
-        id: "scatterplot-layer",
-        data: treesData,
-        getPosition: (d) => d.geometry.coordinates,
-        getFillColor: (d) => {
-            const color = d.properties.color;
-            return [color >> 16, (color >> 8) & 255, color & 255];
-        },
-        getRadius: 5,
-        pickable: true,
-        onHover: updateTooltip,
-    });
-}
+// function createScatterplotLayer(treesData) {
+//     return new ScatterplotLayer({
+//         id: "scatterplot-layer",
+//         data: treesData,
+//         getPosition: (d) => d.geometry.coordinates,
+//         getFillColor: (d) => {
+//             const color = d.properties.color;
+//             return [color >> 16, (color >> 8) & 255, color & 255];
+//         },
+//         getRadius: 5,
+//         pickable: true,
+//         onHover: updateTooltip,
+//     });
+// }
 
 function createQRPositionLayer() {
     return new LineLayer({

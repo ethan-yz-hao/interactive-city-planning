@@ -5,7 +5,7 @@
 
 async function initializeApplication() {
     initializeControls();
-    await initializeVideoAndCanvas();
+    // await initializeVideoAndCanvas();
     await initializeDeckGL();
 }
 
