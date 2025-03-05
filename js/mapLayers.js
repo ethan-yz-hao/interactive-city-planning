@@ -17,8 +17,6 @@ let sidewalkWidth = 1.0; // Default width multiplier
 let selectedTime = "9"; // Default to 9 AM
 let selectedPolygonId = null; // Track the currently selected polygon
 let kpfuiDevDataCache = null; // Cache for the data
-let hexagonRadius = 50; // Default hexagon radius
-let hexagonElevationScale = 10; // Default elevation scale
 
 // async function loadTreesData() {
 //     const response = await fetch("trees.json");
