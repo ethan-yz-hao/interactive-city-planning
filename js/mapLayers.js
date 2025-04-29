@@ -1,8 +1,3 @@
-/* Tutorial: Map Layers
- * This module handles the deck.gl layers and map initialization.
- * It includes functions for creating and updating various visualization layers.
- */
-
 const {
     DeckGL,
     HexagonLayer,
@@ -18,21 +13,9 @@ let selectedTime = "9"; // Default to 9 AM
 let selectedPolygonId = null; // Track the currently selected polygon
 let kpfuiDevDataCache = null; // Cache for the data
 
-// async function loadTreesData() {
-//     const response = await fetch("trees.json");
-//     const data = await response.json();
-//     return data.features;
-// }
-
-// async function loadSidewalksData() {
-//     const response = await fetch("sidewalks.json");
-//     const data = await response.json();
-//     return data.features;
-// }
-
 async function loadKpfuiDevData() {
     if (!kpfuiDevDataCache) {
-        const response = await fetch("kpfui_dev_polygons_deduplicated.json");
+        const response = await fetch("sidewalks.json");
         const data = await response.json();
 
         // Add original_width_ft property to each feature if needed
@@ -57,51 +40,6 @@ async function loadWvBidData() {
     const data = await response.json();
     return data.features;
 }
-
-// // Add this function to buffer the sidewalk geometries
-// function bufferSidewalks(sidewalksData, bufferFactor) {
-//     console.log("Buffering sidewalks with factor:", bufferFactor);
-//     // Create a deep copy of the data to avoid modifying the original
-//     const bufferedData = JSON.parse(JSON.stringify(sidewalksData));
-
-//     // Apply buffer to each feature
-//     bufferedData.forEach((feature) => {
-//         // For Polygon geometries
-//         if (feature.geometry.type === "Polygon") {
-//             // Scale the polygon from its centroid
-//             const coordinates = feature.geometry.coordinates[0]; // Outer ring
-//             if (coordinates.length < 3) return; // Skip if not enough points
-
-//             // Calculate centroid
-//             let centroidX = 0;
-//             let centroidY = 0;
-//             for (let i = 0; i < coordinates.length; i++) {
-//                 centroidX += coordinates[i][0];
-//                 centroidY += coordinates[i][1];
-//             }
-//             centroidX /= coordinates.length;
-//             centroidY /= coordinates.length;
-
-//             // Scale each point relative to the centroid
-//             for (let i = 0; i < coordinates.length; i++) {
-//                 const point = coordinates[i];
-//                 const dx = point[0] - centroidX;
-//                 const dy = point[1] - centroidY;
-
-//                 // Apply scaling factor (1.0 is original size, >1.0 expands, <1.0 shrinks)
-//                 const scaleFactor = 1.0 + (bufferFactor - 1.0) * 0.1; // Adjust sensitivity
-
-//                 // Update coordinates
-//                 coordinates[i] = [
-//                     centroidX + dx * scaleFactor,
-//                     centroidY + dy * scaleFactor,
-//                 ];
-//             }
-//         }
-//     });
-
-//     return bufferedData;
-// }
 
 async function updateLayers() {
     if (window.deckOverlay) {
@@ -216,27 +154,6 @@ function createWvBidLayer(wvBidData) {
     });
 }
 
-/* function createSidewalksLayer(sidewalksData) {
-    // Apply buffer to create wider sidewalks
-    const bufferedSidewalks = bufferSidewalks(sidewalksData, sidewalkWidth);
-
-    return new GeoJsonLayer({
-        id: "sidewalks-layer",
-        data: bufferedSidewalks,
-        pickable: true,
-        stroked: true,
-        filled: true,
-        extruded: true,
-        lineWidthScale: 20,
-        lineWidthMinPixels: 2,
-        getLineColor: [50, 50, 50],
-        getFillColor: [70, 70, 70, 200],
-        getRadius: 100,
-        getLineWidth: 1,
-        getElevation: 5,
-    });
-} */
-
 // Add this function to calculate color based on area per person
 function getColorForAreaPerPerson(areaPerPerson) {
     // Default to middle value if data is missing
@@ -297,37 +214,6 @@ function createKpfuiDevLayer(kpfuiDevData) {
         },
     });
 }
-
-// function createScatterplotLayer(treesData) {
-//     return new ScatterplotLayer({
-//         id: "scatterplot-layer",
-//         data: treesData,
-//         getPosition: (d) => d.geometry.coordinates,
-//         getFillColor: (d) => {
-//             const color = d.properties.color;
-//             return [color >> 16, (color >> 8) & 255, color & 255];
-//         },
-//         getRadius: 5,
-//         pickable: true,
-//         onHover: updateTooltip,
-//     });
-// }
-
-// function createQRPositionLayer() {
-//     return new LineLayer({
-//         id: "line-layer",
-//         data: [
-//             {
-//                 sourcePosition: [QRPosition[0], QRPosition[1], 0],
-//                 targetPosition: [QRPosition[0], QRPosition[1], 1000],
-//             },
-//         ],
-//         getSourcePosition: (d) => d.sourcePosition,
-//         getTargetPosition: (d) => d.targetPosition,
-//         getColor: [0, 255, 0],
-//         getWidth: 5,
-//     });
-// }
 
 async function initializeDeckGL() {
     const map = new maplibregl.Map({
