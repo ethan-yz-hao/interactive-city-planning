@@ -2,6 +2,10 @@
 
 This project provides an interactive visualization tool for urban planners to analyze and simulate sidewalk widths in relation to pedestrian traffic. The application displays sidewalk data on a map using deck.gl, with the ability to adjust sidewalk widths and observe the impact on pedestrian density metrics.
 
+## Demo
+
+[![YouTube Demo](https://img.youtube.com/vi/Yi7UfaQPESo/0.jpg)](https://www.youtube.com/watch?v=Yi7UfaQPESo)
+
 ## Features
 
 -   Interactive map visualization with deck.gl and MapLibre GL
